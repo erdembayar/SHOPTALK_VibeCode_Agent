@@ -31,6 +31,32 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Graphical User Interface (GUI)
+
+The framework includes a modern GUI for easy visual interaction:
+
+#### Starting the GUI
+```bash
+# Direct Python execution
+python gui.py
+
+# Using convenience scripts
+# Windows:
+gui.bat
+
+# Linux/Mac:
+./gui.sh
+```
+
+#### GUI Features
+- **Visual Query Input**: Easy-to-use text field with example buttons
+- **Real-time Responses**: Agents respond in a threaded conversation view
+- **Color-coded Responses**: Different colors for different agent types
+- **System Status**: Live status of all agents and conversation count
+- **Conversation History**: Scrollable history with timestamps
+- **Quick Examples**: One-click example queries for each agent type
+- **Error Handling**: Clear error messages and status updates
+
 ### Command Line Interface (CLI)
 
 The framework includes a powerful CLI for easy command-line usage:
@@ -163,8 +189,19 @@ SHOPTALK/
 ├── math_agent.py          # Mathematical calculations agent
 ├── english_agent.py       # English language agent
 ├── spanish_agent.py       # Spanish language agent
+├── gui.py                # Graphical user interface
+├── cli.py                # Command line interface
 ├── demo.py               # Interactive demo application
+├── quick_demo.py         # Quick demonstration script
+├── simple_example.py     # Simple usage example
+├── comprehensive_test.py # Full framework test
+├── agent.bat             # Windows CLI launcher
+├── agent.sh              # Linux/Mac CLI launcher
+├── gui.bat               # Windows GUI launcher  
+├── gui.sh                # Linux/Mac GUI launcher
 ├── requirements.txt      # Python dependencies
+├── CLI_USAGE.md          # Detailed CLI documentation
+├── .gitignore           # Git ignore file
 └── README.md            # This file
 ```
 
