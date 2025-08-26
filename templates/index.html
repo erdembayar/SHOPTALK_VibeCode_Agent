@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Agentic Framework - Web UI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --math-color: #8b5cf6;
+            --english-color: #3b82f6;
+            --spanish-color: #059669;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #1e40af);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .status-bar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px;
+        }
+
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 20px;
+            background: #fafafa;
+            margin: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, var(--primary-color), #1e40af);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.agent {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            margin-right: auto;
+        }
+
+        .message.math { border-left: 4px solid var(--math-color); }
+        .message.english { border-left: 4px solid var(--english-color); }
+        .message.spanish { border-left: 4px solid var(--spanish-color); }
+        .message.error { border-left: 4px solid var(--danger-color); }
+
+        .agent-icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .input-section {
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .example-buttons {
+            margin: 15px 0;
+        }
+
+        .example-btn {
+            margin: 5px;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background-color: var(--success-color); }
+        .status-processing { background-color: var(--warning-color); animation: pulse 1s infinite; }
+        .status-error { background-color: var(--danger-color); }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .agent-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            transition: transform 0.2s;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-send:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+        }
+
+        .typing-indicator {
+            display: none;
+            color: var(--secondary-color);
+            font-style: italic;
+            padding: 10px;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .connected {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .disconnected {
+            background: var(--danger-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">
+        <i class="fas fa-circle"></i> Connecting...
+    </div>
+
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header">
+                <h1><i class="fas fa-robot"></i> Agentic Framework</h1>
+                <p class="mb-0">Multi-Agent System with Intelligent Routing</p>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6><i class="fas fa-info-circle"></i> System Status</h6>
+                        <div id="systemStatus">
+                            <span class="status-indicator status-active"></span>
+                            <span>Initializing...</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-outline-primary btn-sm" onclick="getStatus()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm ms-2" onclick="clearHistory()">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Agents -->
+            <div class="row mx-3">
+                <div class="col-md-8">
+                    <!-- Chat Container -->
+                    <div class="chat-container" id="chatContainer">
+                        <div class="message agent">
+                            <div>
+                                <span class="agent-icon">🤖</span>
+                                <strong>Agentic Framework</strong>
+                            </div>
+                            <div>Welcome! I'm your multi-agent assistant. Ask me math questions, chat in English, or habla en español!</div>
+                            <div class="timestamp" id="welcomeTime"></div>
+                        </div>
+                    </div>
+                    <div class="typing-indicator" id="typingIndicator">
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                        Agent is thinking...
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <h6><i class="fas fa-users"></i> Available Agents</h6>
+                    <div id="agentsList">
+                        <!-- Agents will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="example-buttons text-center">
+                    <button class="btn btn-outline-secondary example-btn" onclick="setQuery('Calculate 25 + 17')">
+                        🔢 Calculate 25 + 17
+                    </button>
+                    <button class="btn btn-outline-secondary example-btn" onclick="setQuery('Hello, how are you?')">
+                        🇺🇸 Hello, how are you?
+                    </button>
+                    <button class="btn btn-outline-secondary example-btn" onclick="setQuery('¿Hola, cómo estás?')">
+                        🇪🇸 ¿Hola, cómo estás?
+                    </button>
+                    <button class="btn btn-outline-secondary example-btn" onclick="setQuery('What is 5 factorial?')">
+                        🔢 What is 5 factorial?
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" 
+                           class="form-control form-control-lg" 
+                           id="queryInput" 
+                           placeholder="Type your question here... (math, English, or Spanish)"
+                           maxlength="500">
+                    <button class="btn btn-send btn-lg" type="button" onclick="sendQuery()">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+                
+                <div class="text-center mt-2">
+                    <small class="text-muted">Press Enter to send • Max 500 characters</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Socket.IO connection
+        const socket = io();
+        let isConnected = false;
+
+        // DOM elements
+        const chatContainer = document.getElementById('chatContainer');
+        const queryInput = document.getElementById('queryInput');
+        const systemStatus = document.getElementById('systemStatus');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const agentsList = document.getElementById('agentsList');
+
+        // Initialize welcome timestamp
+        document.getElementById('welcomeTime').textContent = new Date().toLocaleTimeString();
+
+        // Socket event handlers
+        socket.on('connect', function() {
+            isConnected = true;
+            updateConnectionStatus(true);
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', function() {
+            isConnected = false;
+            updateConnectionStatus(false);
+            console.log('Disconnected from server');
+        });
+
+        socket.on('status', function(data) {
+            console.log('Status:', data);
+        });
+
+        socket.on('system_status', function(data) {
+            updateSystemStatus(data);
+        });
+
+        socket.on('processing', function(data) {
+            addMessage(data.query, 'user', data.timestamp);
+            showTypingIndicator(true);
+        });
+
+        socket.on('query_response', function(data) {
+            showTypingIndicator(false);
+            addAgentResponse(data.response, data.timestamp);
+        });
+
+        socket.on('error', function(data) {
+            showTypingIndicator(false);
+            addMessage(`Error: ${data.message}`, 'error', data.timestamp);
+        });
+
+        socket.on('history_cleared', function(data) {
+            chatContainer.innerHTML = '';
+            addMessage('Conversation history cleared. Ready for new queries!', 'agent', data.timestamp);
+        });
+
+        // Input handling
+        queryInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendQuery();
+            }
+        });
+
+        // Functions
+        function updateConnectionStatus(connected) {
+            if (connected) {
+                connectionStatus.className = 'connection-status connected';
+                connectionStatus.innerHTML = '<i class="fas fa-circle"></i> Connected';
+            } else {
+                connectionStatus.className = 'connection-status disconnected';
+                connectionStatus.innerHTML = '<i class="fas fa-circle"></i> Disconnected';
+            }
+        }
+
+        function updateSystemStatus(data) {
+            const agentCount = data.specialized_agents ? data.specialized_agents.length : 0;
+            const conversationCount = data.conversation_count || 0;
+            
+            systemStatus.innerHTML = `
+                <span class="status-indicator status-active"></span>
+                ${agentCount} agents active • ${conversationCount} conversations processed
+            `;
+
+            // Update agents list
+            if (data.specialized_agents) {
+                updateAgentsList(data.specialized_agents);
+            }
+        }
+
+        function updateAgentsList(agents) {
+            agentsList.innerHTML = '';
+            agents.forEach(agent => {
+                const icon = getAgentIcon(agent.name);
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.innerHTML = `
+                    <div><strong>${icon} ${agent.name}</strong></div>
+                    <small class="text-muted">${agent.description}</small>
+                `;
+                agentsList.appendChild(card);
+            });
+        }
+
+        function getAgentIcon(agentName) {
+            if (agentName.includes('Math')) return '🔢';
+            if (agentName.includes('Spanish')) return '🇪🇸';
+            if (agentName.includes('English')) return '🇺🇸';
+            return '🤖';
+        }
+
+        function getAgentClass(agentName) {
+            if (agentName.includes('Math')) return 'math';
+            if (agentName.includes('Spanish')) return 'spanish';
+            if (agentName.includes('English')) return 'english';
+            return 'agent';
+        }
+
+        function setQuery(query) {
+            queryInput.value = query;
+            queryInput.focus();
+        }
+
+        function sendQuery() {
+            const query = queryInput.value.trim();
+            if (!query) {
+                alert('Please enter a question!');
+                return;
+            }
+
+            if (!isConnected) {
+                alert('Not connected to server. Please wait...');
+                return;
+            }
+
+            // Clear input
+            queryInput.value = '';
+
+            // Send query via WebSocket
+            socket.emit('send_query', { query: query });
+        }
+
+        function addMessage(text, type, timestamp) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+            
+            if (type === 'user') {
+                messageDiv.innerHTML = `
+                    <div><strong>You:</strong> ${text}</div>
+                    <div class="timestamp">${timeStr}</div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div>${text}</div>
+                    <div class="timestamp">${timeStr}</div>
+                `;
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addAgentResponse(response, timestamp) {
+            const agentName = response.agent || 'Unknown Agent';
+            const result = response.result || 'No response';
+            const agentClass = getAgentClass(agentName);
+            const agentIcon = getAgentIcon(agentName);
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message agent ${agentClass}`;
+            
+            const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <div>
+                    <span class="agent-icon">${agentIcon}</span>
+                    <strong>${agentName}:</strong> ${result}
+                </div>
+                <div class="timestamp">${timeStr}</div>
+            `;
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTypingIndicator(show) {
+            typingIndicator.style.display = show ? 'block' : 'none';
+        }
+
+        function getStatus() {
+            socket.emit('get_status');
+        }
+
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear the conversation history?')) {
+                socket.emit('clear_history');
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Agentic Framework Web UI loaded');
+            queryInput.focus();
+        });
+    </script>
+</body>
+</html>

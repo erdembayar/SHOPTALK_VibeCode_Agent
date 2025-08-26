@@ -31,6 +31,37 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Web User Interface (Web UI)
+
+The framework includes a modern web-based interface with real-time communication:
+
+#### Starting the Web UI
+```bash
+# Direct Python execution
+python web_app.py
+
+# Using convenience scripts
+# Windows:
+web.bat
+
+# Linux/Mac:
+./web.sh
+```
+
+#### Web UI Features
+- **Modern Responsive Design**: Works on desktop, tablet, and mobile
+- **Real-time Communication**: WebSocket-powered instant responses
+- **Visual Chat Interface**: WhatsApp-style conversation view
+- **Color-coded Agents**: Different colors for each agent type
+- **Live System Status**: Real-time agent status and statistics
+- **Quick Examples**: One-click example queries
+- **Browser-based**: No installation needed, works in any modern browser
+
+#### Accessing the Web Interface
+Once started, access the web UI at:
+- **Local**: http://localhost:5000
+- **Network**: http://YOUR_IP:5000 (accessible from other devices)
+
 ### Graphical User Interface (GUI)
 
 The framework includes a modern GUI for easy visual interaction:
@@ -184,25 +215,38 @@ You: What is 5 factorial?
 
 ```
 SHOPTALK/
-├── base_agent.py          # Abstract base class for all agents
-├── primary_agent.py       # Main routing agent
-├── math_agent.py          # Mathematical calculations agent
-├── english_agent.py       # English language agent
-├── spanish_agent.py       # Spanish language agent
-├── gui.py                # Graphical user interface
-├── cli.py                # Command line interface
-├── demo.py               # Interactive demo application
-├── quick_demo.py         # Quick demonstration script
-├── simple_example.py     # Simple usage example
-├── comprehensive_test.py # Full framework test
-├── agent.bat             # Windows CLI launcher
-├── agent.sh              # Linux/Mac CLI launcher
-├── gui.bat               # Windows GUI launcher  
-├── gui.sh                # Linux/Mac GUI launcher
-├── requirements.txt      # Python dependencies
-├── CLI_USAGE.md          # Detailed CLI documentation
-├── .gitignore           # Git ignore file
-└── README.md            # This file
+├── 🤖 Core Agents
+│   ├── base_agent.py          # Abstract base class
+│   ├── primary_agent.py       # Main routing agent
+│   ├── math_agent.py          # Math calculations (FIXED!)
+│   ├── english_agent.py       # English language
+│   └── spanish_agent.py       # Spanish language
+│
+├── 🖥️ User Interfaces  
+│   ├── web_app.py             # Flask web application
+│   ├── templates/
+│   │   └── index.html         # Web UI template
+│   ├── gui.py                 # Graphical interface
+│   ├── cli.py                 # Command line interface
+│   └── demo.py                # Interactive demo
+│
+├── 🚀 Launchers & Scripts
+│   ├── web.bat/.sh            # Web UI launchers
+│   ├── gui.bat/.sh            # GUI launchers
+│   ├── agent.bat/.sh          # CLI launchers
+│   ├── quick_demo.py          # Quick demonstration
+│   ├── simple_example.py      # Usage examples
+│   └── comprehensive_test.py  # Full testing
+│
+├── 📚 Documentation
+│   ├── README.md              # Main documentation
+│   ├── CLI_USAGE.md           # CLI usage guide
+│   ├── GUI_USAGE.md           # GUI usage guide
+│   └── requirements.txt       # Dependencies
+│
+└── ⚙️ Configuration
+    ├── .gitignore             # Git ignore rules
+    └── .git/                  # Git repository
 ```
 
 ## Dependencies
