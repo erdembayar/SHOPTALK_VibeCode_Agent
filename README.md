@@ -31,6 +31,49 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Command Line Interface (CLI)
+
+The framework includes a powerful CLI for easy command-line usage:
+
+#### Basic Usage
+```bash
+# Direct query
+python cli.py "Calculate 25 + 17"
+python cli.py "Hello, how are you?"
+python cli.py "Hola, ¿cómo estás?"
+
+# Using query flag
+python cli.py --query "What is 5 factorial?"
+python cli.py -q "What is the square root of 144?"
+```
+
+#### CLI Options
+```bash
+# System information
+python cli.py --status          # Show system status
+python cli.py --agents          # List available agents  
+python cli.py --version         # Show version info
+
+# Output formats
+python cli.py --json "Calculate 10 + 5"     # JSON output
+python cli.py --quiet "What is 6 factorial?" # Only result
+```
+
+#### Convenience Scripts
+For easier usage, use the provided batch/shell scripts:
+
+**Windows:**
+```cmd
+agent.bat "Calculate 15 + 25"
+agent.bat --status
+```
+
+**Linux/Mac:**
+```bash
+./agent.sh "Calculate 15 + 25"
+./agent.sh --status
+```
+
 ### Interactive Demo
 
 Run the interactive demo to chat with the agents:

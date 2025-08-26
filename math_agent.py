@@ -135,19 +135,72 @@ class MathGeekAgent(BaseAgent):
     
     def _is_arithmetic_expression(self, query: str) -> bool:
         """Check if query is a simple arithmetic expression."""
-        # Remove spaces and check if it's mostly numbers and operators
-        cleaned = re.sub(r'\s+', '', query)
-        return bool(re.match(r'^[\d\+\-\*\/\(\)\.]+$', cleaned))
+        # Look for patterns like "25 + 17", "Calculate 5 * 3", etc.
+        arithmetic_patterns = [
+            r'\d+\s*[\+\-\*\/]\s*\d+',  # Simple arithmetic like "25 + 17"
+            r'calculate\s+\d+\s*[\+\-\*\/]\s*\d+',  # "Calculate 25 + 17"
+            r'\d+\s*[\+\-\*\/]\s*\d+\s*[\+\-\*\/]\s*\d+',  # Multiple operations
+        ]
+        
+        for pattern in arithmetic_patterns:
+            if re.search(pattern, query.lower()):
+                return True
+                
+        return False
     
     def _evaluate_arithmetic(self, query: str) -> str:
         """Safely evaluate arithmetic expressions."""
         try:
-            # Clean the expression
-            expression = re.sub(r'[^\d\+\-\*\/\(\)\.]', '', query)
-            result = eval(expression)
-            return f"The result of {expression} is {result}"
-        except:
-            return f"Could not evaluate the arithmetic expression: {query}"
+            # Extract and clean the mathematical expression more carefully
+            # Look for patterns like "Calculate 25 + 17" or "25 + 17"
+            
+            # First try to find a clear mathematical expression
+            math_expression_match = re.search(r'(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)', query)
+            
+            if math_expression_match:
+                # Found a simple binary operation
+                num1 = float(math_expression_match.group(1))
+                operator = math_expression_match.group(2)
+                num2 = float(math_expression_match.group(3))
+                
+                if operator == '+':
+                    result = num1 + num2
+                elif operator == '-':
+                    result = num1 - num2
+                elif operator == '*':
+                    result = num1 * num2
+                elif operator == '/':
+                    if num2 != 0:
+                        result = num1 / num2
+                    else:
+                        return "Cannot divide by zero"
+                
+                # Format result nicely
+                if result == int(result):
+                    result = int(result)
+                
+                return f"The result of {num1} {operator} {num2} is {result}"
+            
+            # Try to extract a more complex expression
+            # Remove words but keep mathematical symbols and numbers
+            expression = re.sub(r'\b(calculate|compute|solve|what is|the result of)\b', '', query.lower())
+            expression = re.sub(r'[^\d\+\-\*\/\(\)\.\s]', '', expression)
+            expression = expression.strip()
+            
+            if expression and re.search(r'\d', expression):
+                # Safely evaluate the expression
+                result = eval(expression)
+                
+                # Format result nicely
+                if isinstance(result, float) and result == int(result):
+                    result = int(result)
+                
+                return f"The result of {expression} is {result}"
+            else:
+                return f"Could not extract a mathematical expression from: {query}"
+                
+        except Exception as e:
+            return f"Could not evaluate the arithmetic expression: {query}. Error: {str(e)}"
     
     def _handle_factorial(self, query: str) -> str:
         """Handle factorial calculations."""
